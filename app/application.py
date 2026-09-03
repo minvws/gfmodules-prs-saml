@@ -1,28 +1,21 @@
 import json
 import logging
-import signal
-import sys
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from logging.config import dictConfig
 from pathlib import Path
-from types import TracebackType
 from typing import Any
 
+import gfmodules.logging as gflog
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from gfmodules.logging.middleware import (
+    RequestContextMiddleware,
+    restore_request_context,
+)
 
 from app.config import get_config
-from app.logging.config_builder import LogConfigBuilder
-from app.logging.events import (
-    SYS_APP_CRASHED,
-    SYS_APP_STARTED,
-    SYS_APP_STOPPED,
-    SYS_UNHANDLED_EXCEPTION,
-    log_event,
-)
-from app.logging.middleware import RequestContextMiddleware, restore_request_context
+from app.events import Log
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
 from app.routers.saml import router as saml_router
@@ -99,31 +92,26 @@ def run() -> None:
 
 def application_init() -> None:
     setup_logging()
-    _install_excepthook()
-    _install_signal_handlers()
+    gflog.install_excepthook(logger)
+    gflog.install_signal_handlers()
 
 
 def create_fastapi_app() -> FastAPI:
     application_init()
     try:
-        fastapi = setup_fastapi()
+        return setup_fastapi()
     except Exception as exc:
-        log_event(
+        gflog.emit(
             logger,
-            SYS_APP_CRASHED,
+            Log.SYS_APP_CRASHED,
             "Application crashed during startup",
             exc_info=exc,
-            component=COMPONENT,
-            shutdown_reason="crash",
-            last_exception_type=type(exc).__name__,
+            fields={
+                "shutdown_reason": "crash",
+                "last_exception_type": type(exc).__name__,
+            },
         )
         raise
-    _emit_app_started()
-
-    return fastapi
-
-
-_shutdown_reason: str = "graceful"
 
 
 def _read_version() -> str:
@@ -136,110 +124,43 @@ def _read_version() -> str:
         return "unknown"
 
 
-def _emit_app_started() -> None:
-    config = get_config()
-    log_event(
-        logger,
-        SYS_APP_STARTED,
-        "Application started",
-        component=COMPONENT,
-        version=_read_version(),
-        environment=config.app.environment,
-    )
-
-
-def _install_excepthook() -> None:
-    """Route uncaught exceptions through our own logging so the crash is
-    recorded as a PRS-SYS-002 event before the process dies."""
-
-    def _hook(
-        exc_type: type[BaseException],
-        exc_value: BaseException,
-        exc_tb: TracebackType | None,
-    ) -> None:
-        if issubclass(exc_type, KeyboardInterrupt):
-            sys.__excepthook__(exc_type, exc_value, exc_tb)
-            return
-        global _shutdown_reason
-        _shutdown_reason = "crash"
-        log_event(
-            logger,
-            SYS_APP_CRASHED,
-            "Application crashed: uncaught exception",
-            exc_info=(exc_type, exc_value, exc_tb),
-            component=COMPONENT,
-            shutdown_reason="crash",
-            last_exception_type=exc_type.__name__,
-        )
-
-    sys.excepthook = _hook
-
-
-def _install_signal_handlers() -> None:
-    """Record the shutdown reason then delegate to the previously-installed
-    handler (typically uvicorn's), so we don't disrupt graceful shutdown."""
-
-    for sig in (signal.SIGTERM, signal.SIGINT):
-        try:
-            previous = signal.getsignal(sig)
-        except (ValueError, OSError):
-            continue
-
-        def _make_handler(signum: int, prev: Any) -> Any:
-            def _handler(s: int, frame: Any) -> None:
-                global _shutdown_reason
-                _shutdown_reason = f"signal:{signal.Signals(signum).name}"
-                if callable(prev):
-                    prev(s, frame)
-
-            return _handler
-
-        try:
-            signal.signal(sig, _make_handler(sig, previous))
-        except (ValueError, OSError):
-            pass
-
-
 @asynccontextmanager
 async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
-    try:
+    config = get_config()
+    async with gflog.lifespan_logging(
+        logger,
+        version=_read_version(),
+        started_fields={
+            "component": COMPONENT,
+            "environment": config.app.environment,
+        },
+    ):
         yield
-    finally:
-        if _shutdown_reason != "crash":
-            log_event(
-                logger,
-                SYS_APP_STOPPED,
-                "Application stopped",
-                component=COMPONENT,
-                shutdown_reason=_shutdown_reason,
-            )
 
 
 @restore_request_context
 def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    log_event(
+    gflog.emit(
         logger,
-        SYS_UNHANDLED_EXCEPTION,
+        Log.SYS_UNHANDLED_EXCEPTION,
         "Unhandled exception",
         exc_info=exc,
-        exception_type=type(exc).__name__,
-        endpoint=request.url.path,
-        method=request.method,
+        fields={
+            "exception_type": type(exc).__name__,
+            "endpoint": request.url.path,
+            "method": request.method,
+        },
     )
     return JSONResponse(status_code=500, content={"error": "Internal server error"})
 
 
 def setup_logging() -> None:
     config = get_config()
-    loglevel = config.app.loglevel.upper()
-    if loglevel not in logging.getLevelNamesMapping():
-        raise ValueError(f"Invalid loglevel {loglevel}")
-
-    log_config = LogConfigBuilder(
-        loglevel=loglevel,
-        logging_config=config.logging,
-    ).build()
-    dictConfig(log_config)
+    gflog.configure(
+        config=config.logging,
+        loglevel=config.app.loglevel,
+        catalogue=Log,
+    )
 
 
 def setup_fastapi() -> FastAPI:
@@ -263,6 +184,7 @@ def setup_fastapi() -> FastAPI:
     fastapi.add_middleware(
         RequestContextMiddleware,
         correlation_id_expected=config.logging.correlation_id_expected,
+        trust_forwarded_for=config.logging.trust_forwarded_for,
     )
     fastapi.add_exception_handler(Exception, _unhandled_exception_handler)
 
