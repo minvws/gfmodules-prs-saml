@@ -1,0 +1,34 @@
+[app]
+loglevel=debug
+# Deployment environment reported on the startup audit event (e.g. local, test, acc, prod)
+environment=local
+
+[logging]
+# Single syslog channel (host:port, UDP); leave empty to log to stdout only.
+# All streams (app, siem, public_inspect, debug) are multiplexed over this
+# channel; each JSON record carries a stream_id field to tell them apart.
+syslog_path=
+# Identifies this application in the JSON records (application_id field),
+# so the log server can tell apart applications sharing the channel.
+application_id=prs-saml
+# Include stack traces in the JSON logs
+include_traces=True
+# Log everything as plain text to the console (for local development)
+debug_logs_in_console=True
+# Log an error when a request arrives without an X-GF-Correlation-ID header
+correlation_id_expected=False
+
+[uvicorn]
+swagger_enabled = True
+docs_url = /docs
+redoc_url = /redocs
+host = 0.0.0.0
+port = 8534
+reload = True
+
+use_ssl = False
+ssl_base_dir = secrets/ssl
+ssl_cert_file = server.cert
+ssl_key_file = server.key
+# The root path if behind a proxy
+root_path =
