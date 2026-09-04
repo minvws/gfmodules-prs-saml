@@ -3,6 +3,7 @@ import os
 from enum import Enum
 from typing import Any
 
+from gfmodules.logging import ConfigLogging
 from pydantic import BaseModel, Field
 
 _PATH = "app.conf"
@@ -22,14 +23,6 @@ class ConfigApp(BaseModel):
     loglevel: LogLevel = Field(default=LogLevel.info)
     # Deployment environment carried on the PRS-SYS-001 startup event
     environment: str = Field(default="unknown")
-
-
-class ConfigLogging(BaseModel):
-    syslog_path: str | None = Field(default=None)
-    application_id: str | None = Field(default=None)
-    include_traces: bool = Field(default=True)
-    debug_logs_in_console: bool = Field(default=False)
-    correlation_id_expected: bool = Field(default=False)
 
 
 class ConfigUvicorn(BaseModel):
