@@ -11,6 +11,8 @@ syslog_path=
 # Identifies this application in the JSON records (application_id field),
 # so the log server can tell apart applications sharing the channel.
 application_id=prs-saml
+# Emit a per-request access event (100).
+access_logs=True
 # Include stack traces in the JSON logs
 include_traces=True
 # Log everything as plain text to the console (for local development)

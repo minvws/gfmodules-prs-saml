@@ -50,5 +50,5 @@ class Log(EventCatalogue):
             _SIEM: ("endpoint", "method"),
         },
     )
-    ACCESS_REQUEST = LogEvent("001000", logging.INFO, (_APP,))
+    ACCESS_REQUEST = LogEvent("100", logging.INFO, (_APP,))
 
