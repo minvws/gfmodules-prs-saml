@@ -1,7 +1,4 @@
-from gfmodules.logging import DefaultEventCatalogue, LoggingStreams
-
-_APP = LoggingStreams.APP
-_SIEM = LoggingStreams.SIEM
+from gfmodules.logging import DefaultEventCatalogue
 
 _Base = DefaultEventCatalogue
 
@@ -11,11 +8,4 @@ class Log(_Base):
     SYS_APP_STOPPED = _Base.SYS_APP_STOPPED.with_id("270402")  # PRS-SYS-002 (controlled shutdown)
     SYS_APP_CRASHED = _Base.SYS_APP_CRASHED.with_id("270402")  # PRS-SYS-002 (uncontrolled shutdown)
     SYS_UNHANDLED_EXCEPTION = _Base.SYS_UNHANDLED_EXCEPTION.with_id("270404")  # PRS-SYS-004
-    SYS_MISSING_CORRELATION_ID = _Base.SYS_MISSING_CORRELATION_ID.replace(  # PRS-SYS-007
-        event_id="270407",
-        streams=(_APP, _SIEM),
-        fields={
-            _APP: ("endpoint", "method"),
-            _SIEM: ("endpoint", "method"),
-        },
-    )
+    SYS_MISSING_CORRELATION_ID = _Base.SYS_MISSING_CORRELATION_ID.with_id("270407")  # PRS-SYS-007
