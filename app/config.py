@@ -22,8 +22,6 @@ class LogLevel(str, Enum):
 
 class ConfigApp(BaseModel):
     loglevel: LogLevel = Field(default=LogLevel.info)
-    # Deployment environment carried on the PRS-SYS-001 startup event
-    environment: str = Field(default="unknown")
 
 
 class ConfigLogging(GFConfigLogging):

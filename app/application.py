@@ -22,9 +22,6 @@ from app.routers.saml import router as saml_router
 
 logger = logging.getLogger(__name__)
 
-# Component name carried on the PRS-HEALTH / PRS-SYS audit events.
-COMPONENT = "prs-saml"
-
 API_DESCRIPTION = """
 The PRS-SAML service is the SAML-ontvanger of the Pseudoniemendienst (PRS): it
 processes incoming DigiD SAML responses on behalf of the PRS so that XML/SAML
@@ -126,14 +123,9 @@ def _read_version() -> str:
 
 @asynccontextmanager
 async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
-    config = get_config()
     async with gflog.lifespan_logging(
         logger,
         version=_read_version(),
-        started_fields={
-            "component": COMPONENT,
-            "environment": config.app.environment,
-        },
     ):
         yield
 

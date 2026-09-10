@@ -1,7 +1,5 @@
 [app]
 loglevel=debug
-# Deployment environment reported on the startup audit event (e.g. local, test, acc, prod)
-environment=local
 
 [logging]
 # Single syslog channel (host:port, UDP); leave empty to log to stdout only.
