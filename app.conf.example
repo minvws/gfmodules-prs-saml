@@ -14,11 +14,9 @@ application_id=prs-saml
 # Include stack traces in the JSON logs
 include_traces=True
 # Log everything as plain text to the console (for local development)
-debug_logs_in_console=True
+console_streams=debug
 # Log an error when a request arrives without an X-GF-Correlation-ID header
 correlation_id_expected=False
-# Emit a per-request access event (001000); off by default in the library
-access_logs=True
 # Use the X-Forwarded-For header for the client IP in access logs. Only enable
 # where a proxy rewrites the header; anywhere else the caller might set it.
 trust_forwarded_for=False
