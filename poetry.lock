@@ -594,7 +594,7 @@ files = [
 
 [[package]]
 name = "gfmodules-python-logging-library"
-version = "0.2.0"
+version = "0.4.0"
 description = "Provides logging utilities for GFModules Python projects."
 optional = false
 python-versions = ">=3.11,<4.0"
@@ -612,8 +612,8 @@ fastapi = ["starlette (>=1.3,<2.0)"]
 [package.source]
 type = "git"
 url = "https://github.com/minvws/gfmodules-python-logging-library"
-reference = "v0.2.0"
-resolved_reference = "9a6ccb972c34d9842e6f53b0e046f0b66816d88e"
+reference = "v0.4.0"
+resolved_reference = "d0454d4ad08cc807e10a341a39142b7037e92c1e"
 
 [[package]]
 name = "h11"
@@ -1772,4 +1772,4 @@ standard = ["httptools (>=0.8.0)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.11"
-content-hash = "15a45e61080a57fc5d679c599ad5684509c7cc45868e3ac9f8e7c2ea9848dc5b"
+content-hash = "8d828f1a9486035b7108e82ff3853a7c1514163bd7e269db17df4b7adbd47bf3"
