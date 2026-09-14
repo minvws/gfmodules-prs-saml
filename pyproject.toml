@@ -11,7 +11,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.14"
 uvicorn = ">=0.40,<0.53"
 fastapi = ">=0.136.3,<0.142.0"
 pydantic = "^2.12.5"
@@ -42,7 +42,7 @@ include = [
 
 [tool.mypy]
 files = "app,tests"
-python_version = "3.11"
+python_version = "3.14"
 strict = true
 cache_dir = "~/.cache/mypy"
 ignore_missing_imports = true
