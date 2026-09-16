@@ -11,9 +11,11 @@ all: help
 
 lint: ## Check for linting errors
 	$(RUN_PREFIX) ruff check
+	$(RUN_PREFIX) ruff format --diff
 
 lint-fix: ## Fix linting errors
 	$(RUN_PREFIX) ruff check --fix --show-fixes
+	$(RUN_PREFIX) ruff format
 
 type-check: ## Check for typing errors
 	$(RUN_PREFIX) mypy
