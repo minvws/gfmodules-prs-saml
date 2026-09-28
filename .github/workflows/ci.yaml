@@ -225,7 +225,7 @@ jobs:
           ignore-policy: .trivyignore.rego
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4.38.0
+        uses: github/codeql-action/upload-sarif@v4.38.1
         # Only upload SARIF results on main branch or version tags
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         with:
