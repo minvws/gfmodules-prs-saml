@@ -5,6 +5,9 @@ from pathlib import Path
 from fastapi import APIRouter, Response
 from fastapi.responses import JSONResponse, PlainTextResponse
 
+from app.config import get_config
+from app.features import enabled_features
+
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
@@ -40,7 +43,11 @@ def index() -> Response:
 
 @router.get(
     "/version.json",
-    summary="Service version as JSON",
+    summary="Service version and enabled features as JSON",
+    description=(
+        "Returns the build version information, extended with the features "
+        "enabled by the configuration of this environment."
+    ),
     tags=["Service Information"],
 )
 def version_json() -> Response:
@@ -51,4 +58,7 @@ def version_json() -> Response:
         logger.info("version info could not be loaded: %s", e)
         return Response(status_code=404)
 
+    content["features"] = [
+        feature.model_dump() for feature in enabled_features(get_config())
+    ]
     return JSONResponse(content)
