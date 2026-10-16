@@ -5,6 +5,9 @@ from typing import Any
 import pytest
 from fastapi.testclient import TestClient
 
+from app.config import get_config
+from app.features import enabled_features
+
 VERSION_JSON_CONTENT = '{"version": "v0.0.0", "git_ref": "0000000000000000000000000"}'
 
 
@@ -34,7 +37,11 @@ def test_version_json(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> No
 
     response = client.get("/version.json")
     assert response.status_code == 200
-    assert "version" in response.json()
+    body = response.json()
+    assert body["version"] == "v0.0.0"
+    assert body["features"] == [
+        feature.model_dump() for feature in enabled_features(get_config())
+    ]
 
 
 def test_health(client: TestClient) -> None:
