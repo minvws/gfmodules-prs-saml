@@ -1,4 +1,5 @@
 import asyncio
+from pathlib import Path
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -14,11 +15,15 @@ from app import application
 from app.logging.events import Log
 
 
-def test_startup_and_startup_failure_are_logged(mocker: MockerFixture) -> None:
+def test_startup_and_startup_failure_are_logged(
+    mocker: MockerFixture, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     async def run_lifespan() -> None:
         async with application._lifespan(MagicMock()):
             pass
 
+    config_path = str(tmp_path / "startup.ini")
+    monkeypatch.setenv("FASTAPI_CONFIG_PATH", config_path)
     mocker.patch("app.application.application_init")
     mocker.patch(
         "app.application.setup_fastapi", side_effect=RuntimeError("startup boom")
@@ -32,7 +37,7 @@ def test_startup_and_startup_failure_are_logged(mocker: MockerFixture) -> None:
     records: list[Any] = [entry.record for entry in captured.entries]
     started, _, failed = records
     assert started.event_id == Log.SYS_APP_STARTED.event_id
-    assert started.config_path == "./app.test.conf"
+    assert started.config_path == config_path
     assert failed.event_id == Log.SYS_UNHANDLED_EXCEPTION.event_id
     assert failed.exception_type == "RuntimeError"
 

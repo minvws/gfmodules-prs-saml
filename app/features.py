@@ -22,13 +22,13 @@ FEATURES: list[Feature] = [
     Feature(
         info=FeatureInfo(
             id="saml_decrypt",
-            title="SAML decrypt (mock)",
+            title="SAML verification and decryption",
             description=(
-                "Process a DigiD SAML response for the PRS; currently a mock that "
-                "echoes the request"
+                "Verify a TVS SAML ArtifactResponse and decrypt its personal ID "
+                "for the PRS"
             ),
         ),
-        enabled=lambda _: True,
+        enabled=lambda config: config.saml.enabled,
     ),
 ]
 
