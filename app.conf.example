@@ -35,3 +35,30 @@ ssl_cert_file = server.cert
 ssl_key_file = server.key
 # The root path if behind a proxy
 root_path =
+
+[saml]
+# Disabled by default; /saml/decrypt returns 503 until configured and enabled.
+enabled = False
+# Provision a trusted local copy of TVS metadata, verified out of band.
+# Resolve relative file paths from the directory containing this INI file.
+idp_metadata_file = secrets/saml/tvs-metadata.xml
+# EncryptedKey Recipient for this receiver's decryption key.
+entity_id = urn:nl-eid-gdi:1.0:DV:00000000000000000000:entities:0001
+# Expected SAML Audience; configured separately from the key recipient.
+audience = urn:nl-eid-gdi:1.0:DV:00000000000000000000:entities:0001
+# Actual upstream ACS and the registered TVS service.
+acs_url = https://consumer.example.nl/saml/acs
+service_uuid = 00000000-0000-0000-0000-000000000000
+# Provision an unencrypted RSA PEM private key and matching X.509 certificate
+# outside version control. Restrict private-key access to the service account.
+decryption_key_file = secrets/saml/decryption.key
+decryption_certificate_file = secrets/saml/decryption.crt
+# Set to the trusted key name registered in SP metadata if not its SHA-256 fingerprint.
+decryption_key_name =
+accepted_identifier_types = urn:nl-eid-gdi:1.0:id:legacy-BSN
+allow_representation = False
+minimum_loa = http://eidas.europa.eu/LoA/substantial
+# Allowed clock skew: 0..120 seconds. XML limit: 1024..10485760 bytes.
+clock_skew_seconds = 60
+max_xml_bytes = 2097152
+# Keys, certificates and metadata are loaded at startup; restart after changes.

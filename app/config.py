@@ -1,11 +1,12 @@
 import configparser
 import os
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
 from gfmodules.logging import ConfigLogging as GFConfigLogging
 from gfmodules.logging.ini import split_comma_separated
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 _PATH = "app.conf"
 _ENVIRONMENT_CONFIG_PATH_NAME = "FASTAPI_CONFIG_PATH"
@@ -46,10 +47,63 @@ class ConfigUvicorn(BaseModel):
     root_path: str = Field(default="")
 
 
+class ConfigSaml(BaseModel):
+    enabled: bool = False
+    idp_metadata_file: Path | None = None
+    entity_id: str | None = Field(default=None, min_length=1)
+    audience: str | None = Field(default=None, min_length=1)
+    acs_url: str | None = Field(default=None, min_length=1)
+    service_uuid: str | None = Field(default=None, min_length=1)
+    decryption_key_file: Path | None = None
+    decryption_certificate_file: Path | None = None
+    decryption_key_name: str | None = Field(default=None, min_length=1)
+    accepted_identifier_types: str = "urn:nl-eid-gdi:1.0:id:legacy-BSN"
+    allow_representation: bool = False
+    minimum_loa: str = "http://eidas.europa.eu/LoA/substantial"
+    clock_skew_seconds: int = Field(default=60, ge=0, le=120)
+    max_xml_bytes: int = Field(default=2097152, ge=1024, le=10485760)
+
+    @model_validator(mode="after")
+    def require_enabled_settings(self) -> "ConfigSaml":
+        if (
+            self.decryption_key_name is not None
+            and not self.decryption_key_name.strip()
+        ):
+            raise ValueError("Invalid decryption key name")
+        types = {item.strip() for item in self.accepted_identifier_types.split(",")}
+        if types != {"urn:nl-eid-gdi:1.0:id:legacy-BSN"}:
+            raise ValueError("Unsupported identifier types")
+        if self.enabled and any(
+            value is None or (isinstance(value, str) and not value.strip())
+            for value in (
+                self.idp_metadata_file,
+                self.entity_id,
+                self.audience,
+                self.acs_url,
+                self.service_uuid,
+                self.decryption_key_file,
+                self.decryption_certificate_file,
+            )
+        ):
+            raise ValueError("Enabled SAML requires all integration settings")
+        return self
+
+    def resolve_paths(self, directory: Path) -> None:
+        for name in (
+            "idp_metadata_file",
+            "decryption_key_file",
+            "decryption_certificate_file",
+        ):
+            path = getattr(self, name)
+            if path is not None and not path.is_absolute():
+                setattr(self, name, directory / path)
+
+
 class Config(BaseModel):
     app: ConfigApp
     logging: ConfigLogging = Field(default_factory=ConfigLogging)
     uvicorn: ConfigUvicorn
+    saml: ConfigSaml = Field(default_factory=ConfigSaml)
 
 
 def read_ini_file(path: str) -> Any:
@@ -93,5 +147,6 @@ def get_config(path: str | None = None) -> Config:
     ini_data = read_ini_file(path)
 
     _CONFIG = Config.model_validate(ini_data)
+    _CONFIG.saml.resolve_paths(Path(path).resolve().parent)
 
     return _CONFIG

@@ -19,6 +19,7 @@ from app.events import Log
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
 from app.routers.saml import router as saml_router
+from app.saml.service import SamlService
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +31,10 @@ parsing is isolated from the pseudonym engine.
 This is an **internal** service: it is only reachable by the PRS, never by
 external clients.
 
-**Current state: echo mock.** The service accepts the SAML exchange payload
-from the PRS and returns it unchanged; no parsing, validation, or decryption
-is performed yet.
+The service verifies TVS response and assertion signatures using trusted
+metadata, validates the configured audience, and decrypts the personal ID
+with a local RSA key configured in app.conf. Original request correlation
+and replay prevention remain with the upstream authentication owner.
 """
 
 TAGS_METADATA = [
@@ -49,10 +51,7 @@ TAGS_METADATA = [
     },
     {
         "name": "SAML Services",
-        "description": (
-            "Process a DigiD SAML response for the PRS. Currently a mock that "
-            "echoes the payload."
-        ),
+        "description": ("Verify and decrypt a TVS SAML response for the PRS."),
     },
 ]
 
@@ -177,6 +176,9 @@ def setup_fastapi() -> FastAPI:
         trust_forwarded_for=config.logging.trust_forwarded_for,
     )
     fastapi.add_exception_handler(Exception, _unhandled_exception_handler)
+    fastapi.state.saml_service = (
+        SamlService(config.saml) if config.saml.enabled else None
+    )
 
     for router in [default_router, health_router, saml_router]:
         fastapi.include_router(router)
