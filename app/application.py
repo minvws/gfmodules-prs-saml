@@ -90,7 +90,6 @@ def run() -> None:
 def application_init() -> None:
     setup_logging()
     gflog.install_excepthook(logger)
-    gflog.install_signal_handlers()
 
 
 def create_fastapi_app() -> FastAPI:
@@ -171,11 +170,7 @@ def setup_fastapi() -> FastAPI:
         else FastAPI(docs_url=None, redoc_url=None, lifespan=_lifespan)
     )
 
-    fastapi.add_middleware(
-        RequestContextMiddleware,
-        correlation_id_expected=config.logging.correlation_id_expected,
-        trust_forwarded_for=config.logging.trust_forwarded_for,
-    )
+    fastapi.add_middleware(RequestContextMiddleware)
     fastapi.add_exception_handler(Exception, _unhandled_exception_handler)
 
     for router in [default_router, health_router, saml_router]:
