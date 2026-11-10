@@ -2,7 +2,7 @@
 
 <!-- markdownlint-disable MD013 -->
 
-Generated from `app.events:Log` by `gfmodules.logging.event_overview`.
+Generated from `app.logging.events:Log` by `gfmodules.logging.event_overview`.
 Do not edit by hand.
 
 Each stream lists the events that reach it and the fields they carry there besides the context fields.

@@ -15,7 +15,7 @@ from gfmodules.logging.middleware import (
 )
 
 from app.config import get_config
-from app.events import Log
+from app.logging.events import Log
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
 from app.routers.saml import router as saml_router
