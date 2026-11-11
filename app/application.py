@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -9,13 +10,14 @@ import gfmodules.logging as gflog
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from gfmodules.logging.exceptions import log_unhandled_exception
 from gfmodules.logging.middleware import (
     RequestContextMiddleware,
     restore_request_context,
 )
 
-from app.config import get_config
-from app.events import Log
+from app.config import _ENVIRONMENT_CONFIG_PATH_NAME, _PATH, get_config
+from app.logging.events import Log
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
 from app.routers.saml import router as saml_router
@@ -99,13 +101,10 @@ def create_fastapi_app() -> FastAPI:
     except Exception as exc:
         gflog.emit(
             logger,
-            Log.SYS_APP_CRASHED,
-            "Application crashed during startup",
+            Log.SYS_UNHANDLED_EXCEPTION,
+            "Unhandled exception during application startup",
+            fields={"exception_type": type(exc).__name__},
             exc_info=exc,
-            fields={
-                "shutdown_reason": "crash",
-                "last_exception_type": type(exc).__name__,
-            },
         )
         raise
 
@@ -125,21 +124,14 @@ async def _lifespan(_: FastAPI) -> AsyncIterator[None]:
     async with gflog.lifespan_logging(
         logger,
         version=_read_version(),
+        config_path=os.environ.get(_ENVIRONMENT_CONFIG_PATH_NAME, _PATH),
     ):
         yield
 
 
 @restore_request_context
 def _unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    gflog.emit(
-        logger,
-        Log.SYS_UNHANDLED_EXCEPTION,
-        "Unhandled exception",
-        exc_info=exc,
-        fields={
-            "exception_type": type(exc).__name__,
-        },
-    )
+    log_unhandled_exception(logger, request, exc)
     return JSONResponse(status_code=500, content={"error": "Internal server error"})
 
 
@@ -170,10 +162,10 @@ def setup_fastapi() -> FastAPI:
         else FastAPI(docs_url=None, redoc_url=None, lifespan=_lifespan)
     )
 
-    fastapi.add_middleware(RequestContextMiddleware)
-    fastapi.add_exception_handler(Exception, _unhandled_exception_handler)
-
     for router in [default_router, health_router, saml_router]:
         fastapi.include_router(router)
+
+    fastapi.add_exception_handler(Exception, _unhandled_exception_handler)
+    fastapi.add_middleware(RequestContextMiddleware)
 
     return fastapi

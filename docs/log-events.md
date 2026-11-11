@@ -2,7 +2,7 @@
 
 <!-- markdownlint-disable MD013 -->
 
-Generated from `app.events:Log` by `gfmodules.logging.event_overview`.
+Generated from `app.logging.events:Log` by `gfmodules.logging.event_overview`.
 Do not edit by hand.
 
 Each stream lists the events that reach it and the fields they carry there besides the context fields.
@@ -30,7 +30,7 @@ Every event carries these on every stream, whenever the request context holds a 
 | `SYS_APP_STOPPED` | 270402 | INFO | `shutdown_reason`, `last_exception_type` |
 | `SYS_APP_CRASHED` | 270402 | CRITICAL | `shutdown_reason`, `last_exception_type` |
 | `SYS_UNHANDLED_EXCEPTION` | 270404 | ERROR | `exception_type`, `endpoint`, `method` |
-| `SYS_MISSING_CORRELATION_ID` | 270407 | ERROR | `endpoint`, `method` |
+| `SYS_MISSING_CORRELATION_ID` | 270428 | ERROR | `endpoint`, `method` |
 | `ACCESS_REQUEST` | 100 | INFO | `endpoint`, `method`, `status_code`, `status_code_missing`, `duration_ms`, `body`, `body_truncated` |
 
 ## Stream `siem`
