@@ -2,27 +2,21 @@
 loglevel=debug
 
 [logging]
-# All keys are optional.
-# Log server in host:port format (UDP). Leave empty to log to stdout only.
+# Syslog server as host:port (UDP), empty logs to stdout only
 syslog_path=
-# Streams sent to the log server, comma separated, from app, siem,
-# public_inspect and debug. Each JSON record carries its stream_id.
+# Streams sent to syslog: app, siem, public_inspect, debug
 syslog_streams=app,siem,public_inspect
-# Stamped on every JSON record as application_id, so the log server can tell
-# applications sharing the channel apart.
+# Name of this application in every log record
 application_id=prs-saml
-# Streams printed to stdout as readable text, comma separated, from app, siem
-# and debug. The debug stream already holds every record.
+# Streams printed to stdout: app, siem, debug
 console_streams=debug
-# Include tracebacks on the console and on the debug stream.
+# Include tracebacks in logs
 include_traces=True
-# Emit an access record per request.
+# Log every request
 access_logs=True
-# Log an error when a request arrives without an X-GF-Correlation-ID header.
+# Log an error when X-GF-Correlation-ID is missing
 correlation_id_expected=False
-# Read the client ip from X-Forwarded-For instead of the connection. The header
-# is set by the caller, so only enable this where a proxy in front of this
-# application rewrites it.
+# Take the client ip from X-Forwarded-For, only enable behind a trusted proxy
 trust_forwarded_for=False
 
 [uvicorn]
