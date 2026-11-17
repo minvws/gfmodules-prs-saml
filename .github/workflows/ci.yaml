@@ -20,10 +20,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run build action
-        uses: minvws/action-python-poetry-install@v1
+        uses: minvws/action-python-poetry-install@2a1cbf8c2270c5fec60acdbfebae3c072c27f1cb # v1.0.2
         with:
           python_version: "3.14"
 
@@ -34,10 +34,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run build action
-        uses: minvws/action-python-poetry-install@v1
+        uses: minvws/action-python-poetry-install@2a1cbf8c2270c5fec60acdbfebae3c072c27f1cb # v1.0.2
         with:
           python_version: "3.14"
 
@@ -54,10 +54,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run build action
-        uses: minvws/action-python-poetry-install@v1
+        uses: minvws/action-python-poetry-install@2a1cbf8c2270c5fec60acdbfebae3c072c27f1cb # v1.0.2
         with:
           python_version: "3.14"
 
@@ -71,10 +71,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run build action
-        uses: minvws/action-python-poetry-install@v1
+        uses: minvws/action-python-poetry-install@2a1cbf8c2270c5fec60acdbfebae3c072c27f1cb # v1.0.2
         with:
           python_version: "3.14"
 
@@ -88,14 +88,14 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run build action
-        uses: minvws/action-python-poetry-install@v1
+        uses: minvws/action-python-poetry-install@2a1cbf8c2270c5fec60acdbfebae3c072c27f1cb # v1.0.2
         with:
           python_version: "3.14"
 
-      - uses: codespell-project/codespell-problem-matcher@v1
+      - uses: codespell-project/codespell-problem-matcher@b80729f885d32f78a716c2f107b4db1025001c42 # v1.1.0
 
       - name: Run spelling check (codespell)
         run: poetry run codespell .
@@ -107,10 +107,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Run build action
-        uses: minvws/action-python-poetry-install@v1
+        uses: minvws/action-python-poetry-install@2a1cbf8c2270c5fec60acdbfebae3c072c27f1cb # v1.0.2
         with:
           python_version: "3.14"
 
@@ -118,7 +118,7 @@ jobs:
         run: poetry run pytest --cov --cov-report=term --cov-report=xml
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage
           path: coverage.xml
@@ -129,15 +129,15 @@ jobs:
     needs: test
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
       - name: Download coverage report
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: coverage
       - name: Run SonarQube scan
-        uses: minvws/action-sonarqube@v1
+        uses: minvws/action-sonarqube@28bd902ee133b7c212e5f3e82eb58886fe447719 # v1.1.7
         with:
           sonar-token: ${{ secrets.SONAR_TOKEN }}
 
@@ -148,7 +148,7 @@ jobs:
       image_files_changed: ${{ steps.image-files-changed.outputs.any_changed }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check image-related file changes
         id: image-files-changed
         uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
@@ -179,10 +179,10 @@ jobs:
       needs.detect_modified_files.outputs.image_files_changed == 'true'
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v4
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -190,12 +190,12 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ghcr.io/${{ github.repository }}
 
       - name: Build Docker image
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         env:
           NEW_UID: 1000
           NEW_GID: 1000
@@ -214,7 +214,7 @@ jobs:
             GIT_SHA=${{ github.sha }}
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: "sarif"
@@ -225,14 +225,14 @@ jobs:
           ignore-policy: .trivyignore.rego
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4.39.3
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         # Only upload SARIF results on main branch or version tags
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
         with:
           sarif_file: "trivy-results.sarif"
 
       - name: Fail build on vulnerabilities
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
           format: "table"
