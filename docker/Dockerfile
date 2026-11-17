@@ -28,6 +28,7 @@ RUN groupadd --system ${APP_GROUP} --gid=${NEW_GID} && \
 
 # Runtime-only system dependencies
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get install -y --no-install-recommends \
         curl \
     && rm -rf /var/lib/apt/lists/*
