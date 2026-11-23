@@ -95,7 +95,7 @@ jobs:
         with:
           python_version: "3.14"
 
-      - uses: codespell-project/codespell-problem-matcher@b80729f885d32f78a716c2f107b4db1025001c42 # v1.1.0
+      - uses: codespell-project/codespell-problem-matcher@9ba2c57125d4908eade4308f32c4ff814c184633 # v1.2.0
 
       - name: Run spelling check (codespell)
         run: poetry run codespell .
