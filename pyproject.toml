@@ -16,6 +16,11 @@ uvicorn = ">=0.40,<0.55"
 fastapi = ">=0.136.3,<0.164.0"
 pydantic = "^2.12.5"
 gfmodules-python-logging-library = { git = "https://github.com/minvws/gfmodules-python-logging-library", tag = "v0.8.0", extras = ["fastapi"] }
+lxml = ">=6.1,<7"
+xmlsec = "^1.3.18"
+cryptography = ">=46,<51"
+pysaml2 = ">=7.5.5,<8"
+inject = "^5.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -36,8 +41,8 @@ build-backend = "poetry.core.masonry.api"
 cache-dir = "~/.cache/ruff"
 include = [
     "pyproject.toml",
-    "app/*.py",
-    "tests/*.py",
+    "app/**/*.py",
+    "tests/**/*.py",
 ]
 
 [tool.mypy]

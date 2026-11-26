@@ -1,5 +1,6 @@
 [app]
-loglevel=debug
+# DEBUG can include sensitive SAML data in exception traces; use INFO in production.
+loglevel=info
 
 [logging]
 # Syslog server as host:port (UDP), empty logs to stdout only
@@ -33,3 +34,29 @@ ssl_cert_file = server.cert
 ssl_key_file = server.key
 # The root path if behind a proxy
 root_path =
+
+[saml]
+# Disabled by default; valid /saml/decrypt requests return 503 until enabled.
+# Invalid JSON or request fields can receive 400 or 422 first.
+enabled = False
+# Provision a trusted local copy of TVS metadata, verified out of band.
+# Resolve relative file paths from the directory containing this INI file.
+idp_metadata_file = secrets/saml/tvs-metadata.xml
+# EncryptedKey Recipient for this receiver's decryption key.
+entity_id = urn:nl-eid-gdi:1.0:DV:00000000000000000000:entities:0001
+# Expected SAML Audience; configured separately from the key recipient.
+audience = urn:nl-eid-gdi:1.0:DV:00000000000000000000:entities:0001
+# Actual upstream ACS and the registered TVS service.
+acs_url = https://consumer.example.nl/saml/acs
+service_uuid = 00000000-0000-0000-0000-000000000000
+# Provision an unencrypted RSA PEM private key and matching X.509 certificate
+# outside version control. Restrict private-key access to the service account.
+decryption_key_file = secrets/saml/decryption.key
+decryption_certificate_file = secrets/saml/decryption.crt
+# Set to the trusted key name registered in SP metadata if not its SHA-256 fingerprint.
+decryption_key_name =
+allow_representation = False
+minimum_loa = http://eidas.europa.eu/LoA/substantial
+# Allowed clock skew: 0..120 seconds.
+clock_skew_seconds = 60
+# Keys, certificates and metadata are loaded at startup; restart after changes.

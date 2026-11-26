@@ -17,6 +17,8 @@ from gfmodules.logging.middleware import (
 )
 
 from app.config import _ENVIRONMENT_CONFIG_PATH_NAME, _PATH, get_config
+from app.container import build_container
+from app.error_handlers import register_saml_error_handlers
 from app.logging.events import Log
 from app.routers.default import router as default_router
 from app.routers.health import router as health_router
@@ -32,9 +34,10 @@ parsing is isolated from the pseudonym engine.
 This is an **internal** service: it is only reachable by the PRS, never by
 external clients.
 
-**Current state: echo mock.** The service accepts the SAML exchange payload
-from the PRS and returns it unchanged; no parsing, validation, or decryption
-is performed yet.
+The service verifies TVS response and assertion signatures using trusted
+metadata, validates the configured audience, and decrypts the personal ID
+with a local RSA key configured in app.conf. Original request correlation
+and replay prevention remain with the upstream authentication owner.
 """
 
 TAGS_METADATA = [
@@ -51,10 +54,7 @@ TAGS_METADATA = [
     },
     {
         "name": "SAML Services",
-        "description": (
-            "Process a DigiD SAML response for the PRS. Currently a mock that "
-            "echoes the payload."
-        ),
+        "description": ("Verify and decrypt a TVS SAML response for the PRS."),
     },
 ]
 
@@ -162,10 +162,13 @@ def setup_fastapi() -> FastAPI:
         else FastAPI(docs_url=None, redoc_url=None, lifespan=_lifespan)
     )
 
+    fastapi.state.container = build_container(config)
+
     for router in [default_router, health_router, saml_router]:
         fastapi.include_router(router)
 
     fastapi.add_exception_handler(Exception, _unhandled_exception_handler)
+    register_saml_error_handlers(fastapi)
     fastapi.add_middleware(RequestContextMiddleware)
 
     return fastapi
